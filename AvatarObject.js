@@ -16,16 +16,16 @@ class AvatarObject {
         this.spriteSheet = new Image(); // ImageLocation
         this.spriteSheet.src = this.spriteImageLocation;
 
-        // this.spriteSheet.addEventListener('load', () => {
+        this.spriteSheet.addEventListener('load', () => {
 
-        // this.reversedSpriteSheet = document.createElement('canvas');
-        // this.reversedSpriteSheet.width = this.spriteSheet.width;
-        // this.reversedSpriteSheet.height = this.spriteSheet.height;
-        //     const ctx = this.reversedSpriteSheet.getContext('2d');
-        //     ctx.scale(-1, 1); // flip
-        //     this.reversedSpriteSheet.draw(this.spriteSheet, -this.spriteSheet.width, 0);
+            this.reversedSpriteSheet = document.createElement('canvas');
+            this.reversedSpriteSheet.width = this.spriteSheet.width;
+            this.reversedSpriteSheet.height = this.spriteSheet.height;
+            const ctx2 = this.reversedSpriteSheet.getContext('2d');
+            ctx2.scale(-1, 1); // flip
+            this.reversedSpriteSheet.drawImage(this.spriteSheet, -this.spriteSheet.width, 0);
         //     // Done. Now you can use this.reversedSpriteSheet whenever you need the flipped sprites.
-        // }, {once: true});
+        }, {once: true});
 
 
         this.ideling = false;
@@ -123,7 +123,7 @@ class AvatarObject {
         }
 
         context.drawImage(
-            this.spriteSheet,
+            this.direction === 'left' ? this.reversedSpriteSheet : this.spriteSheet,
             (this.frameIndex === 2) ? this.characterProperties[this.direction].x + SPRITE_INCREMENT : this.characterProperties[this.direction].x,
             this.characterProperties[this.direction].y,
             this.spriteSheet.width / 6,
