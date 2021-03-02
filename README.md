@@ -39,6 +39,11 @@ this is the simple animation around the screen. To edit go to the `web.js`
 * Github: [@Dr_DinoMight](https://github.com/Dr_DinoMight)
 
 
+## Contributors
+
+👤 **sdegueldre**
+* Github: [@sdegueldre](https://github.com/sdegueldre)
+
 ## Credits
 
 Thanks to [@0x72](https://twitter.com/_0x72_) for their 2BitCharactersGenerator where sprites are scraped and used from [https://0x72.itch.io/2bitcharactergenerator](https://0x72.itch.io/2bitcharactergenerator)
