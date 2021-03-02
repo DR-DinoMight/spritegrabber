@@ -1,7 +1,8 @@
 const SPRITE_INCREMENT = 48,
       SPRITE_SIZE = 64,
       MOVEMENT_SPEED = 1.5,
-      MIN_ANIMATION_TIME = 3000;
+      MIN_ANIMATION_TIME = 3000,
+      MIN_TEXT_DISPLAY_TIME = 10000;
 
 
 class AvatarObject {
@@ -100,7 +101,50 @@ class AvatarObject {
     }
 
     displayMessage(context, randomMessage = false) {
+        let messageY = this.y - 40;
+        let messageX = this.x - 20;
 
+        if (messageY - 20 < 0) {
+            messageY = this.y + SPRITE_SIZE + 20;
+        }
+
+        if (messageX - 60 < 0) {
+            messageX = 30;
+        }else if (messageX + 120 > context.canvas.width) {
+            messageX = context.canvas.width - 120;
+        }
+
+        this.drawTextBG(context, 'Hello World', messageX, messageY);
+    }
+
+    drawTextBG(ctx, txt, x, y, font = '18px Arial') {
+
+        /// lets save current state as we make a lot of changes
+        ctx.save();
+
+        /// set font
+        ctx.font = font;
+
+        /// draw text from top - makes life easier at the moment
+        ctx.textBaseline = 'top';
+
+        /// color for background
+        ctx.fillStyle = '#fff';
+
+        /// get width of text
+        var width = ctx.measureText(txt).width + 20;
+
+        /// draw background rect assuming height of font
+        ctx.fillRect(x, y, width, parseInt(font, 10)+20);
+
+        /// text color
+        ctx.fillStyle = '#000';
+
+        /// draw text on top
+        ctx.fillText(txt, x+10, y+10);
+
+        /// restore original state
+        ctx.restore();
     }
 
     draw(context) {
@@ -135,7 +179,6 @@ class AvatarObject {
         );
     }
 }
-
 
 export default AvatarObject;
 
