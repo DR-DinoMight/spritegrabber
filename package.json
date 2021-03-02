@@ -1,0 +1,16 @@
+{
+  "name": "spritegrabber",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "playwright": "^1.9.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "grab": "node index.js",
+    "web": "npx http-server ./"
+  },
+  "author": "",
+  "license": "ISC"
+}
