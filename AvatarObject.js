@@ -78,19 +78,19 @@ class AvatarObject {
             this.lastAnimationChange = currentDate;
         }
 
-        if (this.y + SPRITE_SIZE > context.canvas.height){
+        if (this.y + SPRITE_SIZE > context.canvas.height-5){
             this.direction = 'up'
             this.lastAnimationChange = Date.now();
-        }else if (this.y < 0) {
+        }else if (this.y < 5) {
             this.direction = 'down'
             this.lastAnimationChange = Date.now();
         }
-        else if (this.x < 0) {
+        else if (this.x < 5) {
             this.direction = 'right'
             this.lastAnimationChange = Date.now();
 
         }
-        else if (this.x + SPRITE_SIZE > context.canvas.width) {
+        else if (this.x + SPRITE_SIZE > context.canvas.width-5) {
             this.direction = 'left'
             this.lastAnimationChange = Date.now();
         }
@@ -100,7 +100,11 @@ class AvatarObject {
         // this.frameIndex = 0;
     }
 
-    displayMessage(context, randomMessage = false) {
+    setMessage(message) {
+        this.message = message;
+    }
+
+    displayMessage(context, message = '') {
         let messageY = this.y - 40;
         let messageX = this.x - 20;
 
@@ -114,7 +118,7 @@ class AvatarObject {
             messageX = context.canvas.width - 120;
         }
 
-        this.drawTextBG(context, 'Hello World', messageX, messageY);
+        this.drawTextBG(context, this.message, messageX, messageY);
     }
 
     drawTextBG(ctx, txt, x, y, font = '18px Arial') {

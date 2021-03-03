@@ -1,12 +1,21 @@
 
 import AvatarObject from "./AvatarObject.js";
-
-
-const BIRTHDEATHRATE = 2500;
-let lastBirthOrDeath = Date.now();
+import UserObject from "./UserObject.js";
 
 let canvas, context;
+
 let users = [];
+const disallowList = [
+    'PretzelRocks',
+    'StreamElements'
+];
+
+
+const client = new tmi.Client({
+	connection: { reconnect: true },
+	channels: [ 'Dr_DinoMight' ]
+});
+
 
 window.onload = () => {
     canvas = document.getElementById('container');
@@ -14,39 +23,64 @@ window.onload = () => {
     canvas.height = document.documentElement.clientHeight -16;
     context = canvas.getContext("2d");
     context.imageSmoothingEnabled = false;
-    users.push( new AvatarObject(`/imgs/sprite_${Math.floor((Math.random() * 100) + 1)}.png`));
-    users.push( new AvatarObject(`/imgs/sprite_${Math.floor((Math.random() * 100) + 1)}.png`));
-    users.push( new AvatarObject(`/imgs/sprite_${Math.floor((Math.random() * 100) + 1)}.png`));
+
+    client.connect();
+
+    client.on("connected", (address, port) => {
+        console.log("conected");
+    })
+
+    client.on("chat", (channel, userstate, message, self) => {
+        // Don't listen to my own messages..
+        if (self || disallowList.indexOf(userstate['display-name']) === 1) return;
+        // Do your stuff.
+        console.log(message);
+        var user = users.find(o => o.username === userstate['display-name'])
+        if (!user) {
+            users.push(new UserObject(userstate['display-name']));
+            console.log(users);
+        }
+        else{
+            user.updateActivity();
+        }
+
+    });
+
+
     loop();
 }
 
 const loop = () => {
 
-    if (Date.now() > BIRTHDEATHRATE + lastBirthOrDeath ) {
-        console.log('in here');
-        if (Math.random() < 0.30 && users.length <= 7) {
-            users.push( new AvatarObject(`/imgs/sprite_${Math.floor((Math.random() * 100) + 1)}.png`));
-        } else if (Math.random() < 0.10 && users.length > 3 && users.length <= 7) {
-            users.shift();
-        }
-        lastBirthOrDeath = Date.now();
-    }
-
+    // if (Date.now() > BIRTHDEATHRATE + lastBirthOrDeath ) {
+    //     console.log('in here');
+    //     if (Math.random() < 0.30 && users.length <= 7) {
+    //         users.push( new AvatarObject(`/imgs/sprite_${Math.floor((Math.random() * 100) + 1)}.png`));
+    //     } else if (Math.random() < 0.10 && users.length > 3 && users.length <= 7) {
+    //         users.shift();
+    //     }
+    //     lastBirthOrDeath = Date.now();
+    // }
     update();
     draw();
     requestAnimationFrame(loop);
 }
 
 const update = () => {
-    users.forEach( (avatar) =>{
-        avatar.update();
+    let newUser = [];
+    users.forEach( (user) =>{
+        if (user.deathTime >= Date.now()){
+            newUser.push(user)
+            user.update(true);
+        }
     });
+    users = newUser;
 }
 
 const draw = () => {
     context.clearRect(0,0,canvas.width, canvas.height);
-    users.forEach( (avatar) =>{
-        avatar.draw(context);
+    users.forEach( (user) =>{
+        user.avatar.draw(context);
     });
 }
 
