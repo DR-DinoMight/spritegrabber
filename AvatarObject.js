@@ -105,24 +105,10 @@ class AvatarObject {
     }
 
     displayMessage(context, message = '') {
-        let messageY = this.y - 40;
-        let messageX = this.x - 20;
-
-        if (messageY - 20 < 0) {
-            messageY = this.y + SPRITE_SIZE + 20;
-        }
-
-        if (messageX - 60 < 0) {
-            messageX = 30;
-        }else if (messageX + 120 > context.canvas.width) {
-            messageX = context.canvas.width - 120;
-        }
-
-        this.drawTextBG(context, this.message, messageX, messageY);
+        this.drawTextBG(context, this.message);
     }
 
-    drawTextBG(ctx, txt, x, y, font = '18px Arial') {
-
+    drawTextBG(ctx, txt, font = '18px Arial') {
         /// lets save current state as we make a lot of changes
         ctx.save();
 
@@ -136,10 +122,23 @@ class AvatarObject {
         ctx.fillStyle = '#fff';
 
         /// get width of text
-        var width = ctx.measureText(txt).width + 20;
+        var width = ctx.measureText(txt).width;
+
+        let y = this.y - 40;
+        let x = this.x - width/2;
+
+        if (y - 20 < 0) {
+            y = this.y + SPRITE_SIZE + 20;
+        }
+
+        if (x - 60 < 0) {
+            x = 0;
+        }else if (this.x + width > ctx.canvas.width) {
+            x = ctx.canvas.width - (width+30);
+        }
 
         /// draw background rect assuming height of font
-        ctx.fillRect(x, y, width, parseInt(font, 10)+20);
+        ctx.fillRect(x, y, width, parseInt(font, 10)+30);
 
         /// text color
         ctx.fillStyle = '#000';
@@ -185,10 +184,3 @@ class AvatarObject {
 }
 
 export default AvatarObject;
-
-
-
-
-
-
-

@@ -1,6 +1,6 @@
 import AvatarObject from "./AvatarObject.js";
 
-const DEATHRATE = 10000;
+const DEATHRATE = 100000;
 
 class UserObject {
     constructor(username) {
