@@ -1,50 +1,56 @@
+import SpriteMaker from "./SpriteMaker.js";
+
 const SPRITE_INCREMENT = 48,
       SPRITE_SIZE = 64,
       MOVEMENT_SPEED = 1.5,
       MIN_ANIMATION_TIME = 3000,
-      MIN_TEXT_DISPLAY_TIME = 10000;
+      MIN_TEXT_DISPLAY_TIME = 10000,
+      TIMESPERFRAME = 250;
 
+var a = function(n) {
+return n
+    .split(',')
+    .map(function(k){ return { x: parseInt(k), f: !!k.match('f')} });
+}
+var ANIMS = {
+    rotate: a("0,2f,1,2"),
+    up: a("0,3,0f,3f"),
+    down: a("1,4,1f,4f"),
+    left: a("2,5"),
+    right: a("2f,5f"),
+    idle: a("0,0f")
+}
+
+var currentAnimName;
 
 class AvatarObject {
-    constructor(spriteImageLocation, direction = 'down', x = 0, y = 0, width = 16, height = 16, timePerFrame = 150, numberOfFrames = 2) {
-        this.characterProperties = {
-            'down': {x: 0, y: 0, reverse: false}, //down
-            'up': {x: 16, y: 0, reverse: false}, //up
-            'right': {x: 0, y: 0, reverse: true}, //right
-            'left': {x: 32, y: 0, reverse: false}, //left
-        };
-        this.spriteImageLocation = spriteImageLocation
-        this.spriteSheet = new Image(); // ImageLocation
-        this.spriteSheet.src = this.spriteImageLocation;
-        this.reversedSpriteSheet = document.createElement('canvas');
-
-        this.spriteSheet.addEventListener('load', () => {
-
-            this.reversedSpriteSheet.width = this.spriteSheet.width;
-            this.reversedSpriteSheet.height = this.spriteSheet.height;
-            const ctx2 = this.reversedSpriteSheet.getContext('2d');
-            ctx2.scale(-1, 1); // flip
-            ctx2.drawImage(this.spriteSheet, -this.spriteSheet.width, 0);
-        //     // Done. Now you can use this.reversedSpriteSheet whenever you need the flipped sprites.
-        }, {once: true});
-
+    constructor(direction = 'idle', x = 0, y = 0, ) {
+        currentAnimName = direction;
+        this.spriteSheetMaker = new SpriteMaker();
+        this.spriteSheet = this.spriteSheetMaker.getCanvas();
 
         this.ideling = false;
 
-        var keys = Object.keys(this.characterProperties);
+        var keys = Object.keys(ANIMS);
         this.direction = keys[ keys.length * Math.random() << 0];
         this.x = x; // where to draw X coordinate
         this.y = y; // where to draw Y coordinate.
-        this.width = width;     //the width of sprite
-        this.height = height; // the height of sprite
-        this.timePerFrame = timePerFrame; //time in(ms) given to each frame default 250ms
-        this.numberOfFrames = numberOfFrames; //number of frames(sprites) in the spritesheet, default 1
+        this.width = this.spriteSheet.width;     //the width of sprite
+        this.height = this.spriteSheet.height; // the height of sprite
+        this.timePerFrame = TIMESPERFRAME; //time in(ms) given to each frame default 250ms
+        this.numberOfFrames = ANIMS[this.direction].length - 1; //number of frames(sprites) in the spritesheet, default 1
         //current frame pointer
-        this.frameIndex = 1;
+        this.frameIndex = 0;
 
         //last time frame index was updated
         this.lastUpdate = Date.now();
         this.lastAnimationChange = Date.now();
+    }
+
+    async load() {
+        await this.spriteSheetMaker.updatecanvas();
+        this.spriteSheet = await this.spriteSheetMaker.getCanvas();
+        // console.image( await this.spriteSheetMaker.getImage());
     }
 
     update() {
@@ -52,7 +58,7 @@ class AvatarObject {
         if(Date.now() - this.lastUpdate >= this.timePerFrame) {
             this.frameIndex++;
             if(this.frameIndex > this.numberOfFrames) {
-                this.frameIndex = 1;
+                this.frameIndex = 0;
             }
             this.lastUpdate = Date.now();
         }
@@ -65,16 +71,8 @@ class AvatarObject {
         if (currentDate >= this.lastAnimationChange + MIN_ANIMATION_TIME &&
             Math.random() < 0.40
         ){
-            if (Math.random() < 0.25)
-            {
-                this.ideling = true;
-                this.direction = 'down';
-            }
-            else {
-                this.ideling = false;
-                var keys = Object.keys(this.characterProperties);
-                this.direction = keys[ keys.length * Math.random() << 0];
-            }
+            var keys = Object.keys(ANIMS);
+            this.direction = keys[ keys.length * Math.random() << 0];
             this.lastAnimationChange = currentDate;
         }
 
@@ -150,8 +148,7 @@ class AvatarObject {
         ctx.restore();
     }
 
-    draw(context) {
-
+    async draw(context) {
         this.changeAnimation(context);
 
         this.displayMessage(context, true);
@@ -169,17 +166,28 @@ class AvatarObject {
             }
         }
 
+        var anim = ANIMS[currentAnimName];
+        var frame = anim[this.frameIndex];
+        var len = anim.length;
+
+        context.save();
+        if(frame && frame.f){
+            context.translate(16, 0);
+            context.scale(-1, 1);
+        }
+        if (!anim[this.frameIndex]) this.frameIndex = 0;
         context.drawImage(
-            this.characterProperties[this.direction].reverse ? this.reversedSpriteSheet : this.spriteSheet,
-            (this.frameIndex === 2) ? this.characterProperties[this.direction].x + SPRITE_INCREMENT : this.characterProperties[this.direction].x,
-            this.characterProperties[this.direction].y,
-            this.spriteSheet.width / 6,
-            this.height,
+            await this.spriteSheetMaker.getCanvas(),
+            anim[this.frameIndex].x * 16,
+            anim[this.frameIndex].y,
+            16,
+            16,
             this.x,
             this.y,
             SPRITE_SIZE,
             SPRITE_SIZE
         );
+        context.restore();
     }
 }
 

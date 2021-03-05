@@ -34,7 +34,6 @@ window.onload = () => {
         // Don't listen to my own messages..
         if (self || disallowList.indexOf(userstate['display-name']) === 1) return;
         // Do your stuff.
-        console.log(message);
         var user = users.find(o => o.username === userstate['display-name'])
         if (!user) {
             users.push(new UserObject(userstate['display-name']));
@@ -43,8 +42,9 @@ window.onload = () => {
         else{
             user.updateActivity();
         }
-
     });
+
+    users.push(new UserObject('hello'));
 
 
     loop();

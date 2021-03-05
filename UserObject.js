@@ -5,7 +5,8 @@ const DEATHRATE = 100000;
 class UserObject {
     constructor(username) {
         this.username = username;
-        this.avatar = new AvatarObject(`/imgs/sprite_${Math.floor((Math.random() * 100) + 1)}.png`);
+        this.avatar = new AvatarObject()
+        this.avatar.load();
         this.avatar.setMessage(this.username);
         this.lastTimeSeen = Date.now();
         this.deathTime = this.lastTimeSeen + DEATHRATE;
@@ -18,7 +19,7 @@ class UserObject {
 
     update(displayDebug=false){
         if (displayDebug){
-            this.avatar.setMessage(this.username + ' = ' + (this.deathTime - Date.now()));
+            this.avatar.setMessage(this.username);
         }
         this.avatar.update();
     }
