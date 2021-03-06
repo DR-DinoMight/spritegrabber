@@ -53,7 +53,12 @@ class AvatarObject {
         // console.image( await this.spriteSheetMaker.getImage());
     }
 
-    update() {
+    async update() {
+        while (this.loading){
+            setTimeout(() => {
+                console.log('loading');
+            }, 100);
+        }
 
         if(Date.now() - this.lastUpdate >= this.timePerFrame) {
             this.frameIndex++;
@@ -149,45 +154,49 @@ class AvatarObject {
     }
 
     async draw(context) {
-        this.changeAnimation(context);
+        if (!this.loading) {
+            this.changeAnimation(context);
 
-        this.displayMessage(context, true);
+            this.displayMessage(context, true);
 
 
-        if (!this.ideling) {
-            if (this.direction == 'down') {
-                this.y += MOVEMENT_SPEED;
-            }else if (this.direction == 'up') {
-                this.y -= MOVEMENT_SPEED;
-            }else if (this.direction == 'right') {
-                this.x += MOVEMENT_SPEED;
-            }else  if (this.direction == 'left') {
-                this.x -= MOVEMENT_SPEED;
+            if (!this.ideling) {
+                if (this.direction == 'down') {
+                    this.y += MOVEMENT_SPEED;
+                }else if (this.direction == 'up') {
+                    this.y -= MOVEMENT_SPEED;
+                }else if (this.direction == 'right') {
+                    this.x += MOVEMENT_SPEED;
+                }else  if (this.direction == 'left') {
+                    this.x -= MOVEMENT_SPEED;
+                }
             }
-        }
 
-        var anim = ANIMS[currentAnimName];
-        var frame = anim[this.frameIndex];
-        var len = anim.length;
+            var anim = ANIMS[currentAnimName];
+            var frame = anim[this.frameIndex];
+            var len = anim.length;
 
-        context.save();
-        if(frame && frame.f){
-            context.translate(16, 0);
-            context.scale(-1, 1);
+            context.save();
+
+            if(frame && frame.f){
+                context.translate(16, 0);
+                context.scale(-1, 1);
+            }
+            if (!anim[this.frameIndex]) this.frameIndex = 0;
+
+            context.drawImage(
+                await this.spriteSheetMaker.getCanvas(),
+                anim[this.frameIndex].x * 16,
+                anim[this.frameIndex].y,
+                16,
+                16,
+                this.x,
+                this.y,
+                SPRITE_SIZE,
+                SPRITE_SIZE
+            );
+            context.restore();
         }
-        if (!anim[this.frameIndex]) this.frameIndex = 0;
-        context.drawImage(
-            await this.spriteSheetMaker.getCanvas(),
-            anim[this.frameIndex].x * 16,
-            anim[this.frameIndex].y,
-            16,
-            16,
-            this.x,
-            this.y,
-            SPRITE_SIZE,
-            SPRITE_SIZE
-        );
-        context.restore();
     }
 }
 

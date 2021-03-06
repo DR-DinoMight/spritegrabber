@@ -17,11 +17,11 @@ class UserObject {
         this.deathTime = this.lastTimeSeen + DEATHRATE;
     }
 
-    update(displayDebug=false){
+    async update(displayDebug=false){
         if (displayDebug){
             this.avatar.setMessage(this.username);
         }
-        this.avatar.update();
+        await this.avatar.update();
     }
 }
 

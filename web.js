@@ -77,7 +77,7 @@ const update = () => {
     users = newUser;
 }
 
-const draw = () => {
+const draw = async () => {
     context.clearRect(0,0,canvas.width, canvas.height);
     users.forEach( (user) =>{
         user.avatar.draw(context);
