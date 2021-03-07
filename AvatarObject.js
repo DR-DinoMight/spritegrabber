@@ -13,12 +13,12 @@ return n
     .map(function(k){ return { x: parseInt(k), f: !!k.match('f')} });
 }
 var ANIMS = {
-    rotate: a("0,2f,1,2"),
-    up: a("0,3,0f,3f"),
-    down: a("1,4,1f,4f"),
+    rotate: a("0,0f,4,2"),
+    down: a("0,3,5f,2f"),
+    up: a("1,4,4f,1f"),
     left: a("2,5"),
-    right: a("2f,5f"),
-    idle: a("0,0f")
+    right: a("0f,3f"),
+    idle: a("3,2f")
 }
 
 var currentAnimName;
@@ -27,7 +27,6 @@ class AvatarObject {
     constructor(direction = 'idle', x = 0, y = 0, ) {
         currentAnimName = direction;
         this.spriteSheetMaker = new SpriteMaker();
-        this.spriteSheet = this.spriteSheetMaker.getCanvas();
 
         this.ideling = false;
 
@@ -35,31 +34,43 @@ class AvatarObject {
         this.direction = keys[ keys.length * Math.random() << 0];
         this.x = x; // where to draw X coordinate
         this.y = y; // where to draw Y coordinate.
-        this.width = this.spriteSheet.width;     //the width of sprite
-        this.height = this.spriteSheet.height; // the height of sprite
+         // the height of sprite
         this.timePerFrame = TIMESPERFRAME; //time in(ms) given to each frame default 250ms
         this.numberOfFrames = ANIMS[this.direction].length - 1; //number of frames(sprites) in the spritesheet, default 1
         //current frame pointer
         this.frameIndex = 0;
-
-        //last time frame index was updated
-        this.lastUpdate = Date.now();
-        this.lastAnimationChange = Date.now();
     }
 
     async load() {
-        await this.spriteSheetMaker.updatecanvas();
-        this.spriteSheet = await this.spriteSheetMaker.getCanvas();
-        // console.image( await this.spriteSheetMaker.getImage());
+        this.spriteSheetMaker.load();
+        window.addEventListener("SpritMakerLoaded", async () => {
+            var image  = new Image();
+            image.src = this.spriteSheetMaker.getImage();
+            this.spriteSheet = image;
+            this.reversedSpriteSheet = document.createElement('canvas');
+
+            this.spriteSheet.addEventListener('load', () => {
+
+                this.reversedSpriteSheet.width = this.spriteSheet.width;
+                this.reversedSpriteSheet.height = this.spriteSheet.height;
+                const ctx2 = this.reversedSpriteSheet.getContext('2d');
+                ctx2.scale(-1, 1); // flip
+                ctx2.drawImage(this.spriteSheet, -this.spriteSheet.width, 0);
+            }, {once: true});
+
+            console.log(image);
+            this.width = this.spriteSheet.width;     //the width of sprite
+            this.height = this.spriteSheet.height;
+                    //last time frame index was updated
+            this.lastUpdate = Date.now();
+            this.lastAnimationChange = Date.now();
+            document.dispatchEvent(AvatarLoaded);
+        },true);
+
+        // co;nsole.image( await this.spriteSheetMaker.getImage());
     }
 
     async update() {
-        while (this.loading){
-            setTimeout(() => {
-                console.log('loading');
-            }, 100);
-        }
-
         if(Date.now() - this.lastUpdate >= this.timePerFrame) {
             this.frameIndex++;
             if(this.frameIndex > this.numberOfFrames) {
@@ -74,8 +85,9 @@ class AvatarObject {
         let currentDate = Date.now();
 
         if (currentDate >= this.lastAnimationChange + MIN_ANIMATION_TIME &&
-            Math.random() < 0.40
+            Math.random() < 0.80
         ){
+            console.log('here');
             var keys = Object.keys(ANIMS);
             this.direction = keys[ keys.length * Math.random() << 0];
             this.lastAnimationChange = currentDate;
@@ -107,8 +119,8 @@ class AvatarObject {
         this.message = message;
     }
 
-    displayMessage(context, message = '') {
-        this.drawTextBG(context, this.message);
+    displayMessage(context, message) {
+        this.drawTextBG(context, message || this.message);
     }
 
     drawTextBG(ctx, txt, font = '18px Arial') {
@@ -155,9 +167,19 @@ class AvatarObject {
 
     async draw(context) {
         if (!this.loading) {
+            var time = Date.now ? Date.now() : +(new Date());
+
+            var nt = parseInt(time / 200);
+            // var anim = ANIMS[this.direction];
+            var anim = ANIMS[this.direction];
+            var len = anim.length;
+
+            var findex = nt % len;
+            var frame = anim[findex];
+
             this.changeAnimation(context);
 
-            this.displayMessage(context, true);
+            this.displayMessage(context);
 
 
             if (!this.ideling) {
@@ -172,22 +194,14 @@ class AvatarObject {
                 }
             }
 
-            var anim = ANIMS[currentAnimName];
-            var frame = anim[this.frameIndex];
-            var len = anim.length;
+
 
             context.save();
 
-            if(frame && frame.f){
-                context.translate(16, 0);
-                context.scale(-1, 1);
-            }
-            if (!anim[this.frameIndex]) this.frameIndex = 0;
-
             context.drawImage(
-                await this.spriteSheetMaker.getCanvas(),
-                anim[this.frameIndex].x * 16,
-                anim[this.frameIndex].y,
+                !frame.f ? this.spriteSheet : this.reversedSpriteSheet,
+                frame.x * 16,
+                0,
                 16,
                 16,
                 this.x,
@@ -199,5 +213,13 @@ class AvatarObject {
         }
     }
 }
+
+export var AvatarLoaded = new Event (
+    "AvatarLoaded", {
+        bubbles: true,
+        cancelable: true,
+        composed: true
+    }
+)
 
 export default AvatarObject;

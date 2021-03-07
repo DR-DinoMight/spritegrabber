@@ -46,8 +46,10 @@ window.onload = () => {
 
     users.push(new UserObject('hello'));
 
-
-    loop();
+    document.addEventListener('AvatarLoaded', () => {
+        console.log("Loaded");
+        loop();
+    }, true)
 }
 
 const loop = () => {

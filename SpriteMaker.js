@@ -27,22 +27,21 @@ class SpriteMaker {
         this.canvas.height = 16 * 1;
         this.context = this.canvas.getContext('2d');
         this.loading = true;
-        this.loadAllTextures();
-        this.randomiseAll();
     }
 
-    async getCanvas() {
-        if (gTextures.loaded !== gTextures.requested){
-            setTimeout(() => {
-                console.log('not loaded please wait');
-            }, 100);
-        }
-        else{
-            return this.canvas;
-        }
+    async load() {
+        await this.loadAllTextures();
+        await this.randomiseAll();
+        await this.updatecanvas();
     }
-    async getImage() {
-        return this.canvas.toDataURL("image/png");
+
+    getCanvas() {
+        return this.canvas;
+    }
+
+    getImage() {
+        var image = this.canvas.toDataURL("image/png");
+        return image;
     }
 
     async loadTexture(key) {
@@ -51,12 +50,14 @@ class SpriteMaker {
         texture.src = `./imgs/spriteParts/${key}.png?v=${Math.random()}`;
         gTextures.requested++;
         gTextures[key] = texture;
-
+        if (key == 'hands') console.log(gTextures);
         texture.onload = function(e) {
             gTextures.loaded++;
 
             if (gTextures.loaded == gTextures.requested){
-                self.updatecanvas();
+                self.updatecanvas().then(() => {
+                    window.dispatchEvent(SpriteMakerLoaded);
+                });
             }
         }
     }
@@ -69,7 +70,6 @@ class SpriteMaker {
         await this.loadTexture("ears");
         await this.loadTexture("torso");
         await this.loadTexture("hands");
-        this.loading = false;
     }
 
     drawPart(key, forceY, forceFrame){
@@ -89,6 +89,7 @@ class SpriteMaker {
     async updatecanvas() {
 
         if (gTextures.loaded == gTextures.requested){
+            this.loading = true;
             this.context.clearRect(0,0, this.canvas.width, this.canvas.height);
             this.context.drawImage(gTextures['base'], 0, 0);
 
@@ -100,9 +101,10 @@ class SpriteMaker {
             this.drawPart("hands", 0);
 
             // back of the hair
-            this.drawPart("hair", null, 4);
-            this.drawPart("hair", null, 1);
-            this.colourSprite();
+            // this.drawPart("hair", null, 4);
+            // this.drawPart("hair", null, 1);
+            await this.colourSprite();
+            this.loading = false
             return this.canvas;
         }
     }
@@ -165,10 +167,18 @@ class SpriteMaker {
         await this.randomise("mouth");
         await this.randomise("ears");
         await this.randomise("torso");
-        await this.randomise("hands");
+        this.loading = false;
     }
 
 }
+
+export var SpriteMakerLoaded = new Event (
+    "SpritMakerLoaded", {
+        bubbles: true,
+        cancelable: true,
+        composed: true
+    }
+)
 
 
 export default SpriteMaker;

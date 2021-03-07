@@ -6,8 +6,8 @@ class UserObject {
     constructor(username) {
         this.username = username;
         this.avatar = new AvatarObject()
-        this.avatar.load();
         this.avatar.setMessage(this.username);
+        this.avatar.load();
         this.lastTimeSeen = Date.now();
         this.deathTime = this.lastTimeSeen + DEATHRATE;
     }

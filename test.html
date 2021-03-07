@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id='container'></canvas>
+    <script type="module">
+        import SpriteMaker from './SpriteMaker.js';
+
+        var canvas = document.getElementById('container');
+        canvas.width = document.documentElement.clientWidth - 16;
+        canvas.height = document.documentElement.clientHeight -16;
+        var context = canvas.getContext("2d");
+        context.imageSmoothingEnabled = false;
+
+
+        var sprite = new SpriteMaker();
+        sprite.load();
+
+        window.addEventListener("SpritMakerLoaded", async () => {
+            console.log('loaded');
+            var canvas = sprite.getCanvas();
+            console.log(canvas);
+            context.scale(5,5);
+            context.drawImage(canvas, 0, 0);
+        });
+    </script>
+</body>
+</html>
