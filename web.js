@@ -6,8 +6,8 @@ let canvas, context;
 
 let users = [];
 const disallowList = [
-    'PretzelRocks',
-    'StreamElements'
+    'pretzelrocks',
+    'streamelements'
 ];
 
 
@@ -27,42 +27,46 @@ window.onload = () => {
     client.connect();
 
     client.on("connected", (address, port) => {
-        console.log("conected");
+        console.log("connected");
     })
 
     client.on("chat", (channel, userstate, message, self) => {
         // Don't listen to my own messages..
-        if (self || disallowList.indexOf(userstate['display-name']) === 1) return;
+        if (self || disallowList.indexOf(userstate['display-name'].toLowerCase()) == 1) return;
         // Do your stuff.
-        var user = users.find(o => o.username === userstate['display-name'])
+        var user = users.find(o => o.username.toLowerCase() == userstate['display-name'].toLowerCase())
+        // console.log(!user);
         if (!user) {
-            users.push(new UserObject(userstate['display-name']));
-            console.log(users);
+
+            if (userstate['display-name'].toLowerCase() == 'whitep4nth3r') {
+                users.push(new UserObject(userstate['display-name'],'panthers'));
+            }
+            else if (userstate['display-name'].toLowerCase() == 'dr_dinomight') {
+                users.push(new UserObject(userstate['display-name'], 'dr_dinos'));
+            }
+            else {
+                users.push(new UserObject(userstate['display-name']));
+            }
+
+            // console.log(users);
         }
         else{
             user.updateActivity();
         }
     });
 
-    users.push(new UserObject('hello'));
+    // users.push(new UserObject('hello long name', 'dr_dinos'));
 
     document.addEventListener('AvatarLoaded', () => {
-        console.log("Loaded");
         loop();
-    }, true)
+    }, {
+        once: true,
+        passive: true,
+        capture: true
+      })
 }
 
 const loop = () => {
-
-    // if (Date.now() > BIRTHDEATHRATE + lastBirthOrDeath ) {
-    //     console.log('in here');
-    //     if (Math.random() < 0.30 && users.length <= 7) {
-    //         users.push( new AvatarObject(`/imgs/sprite_${Math.floor((Math.random() * 100) + 1)}.png`));
-    //     } else if (Math.random() < 0.10 && users.length > 3 && users.length <= 7) {
-    //         users.shift();
-    //     }
-    //     lastBirthOrDeath = Date.now();
-    // }
     update();
     draw();
     requestAnimationFrame(loop);
@@ -82,6 +86,7 @@ const update = () => {
 const draw = async () => {
     context.clearRect(0,0,canvas.width, canvas.height);
     users.forEach( (user) =>{
+        // console.log('useruser)
         user.avatar.draw(context);
     });
 }

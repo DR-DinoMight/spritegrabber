@@ -1,13 +1,13 @@
 import AvatarObject from "./AvatarObject.js";
 
-const DEATHRATE = 100000;
+const DEATHRATE = 300000;
 
 class UserObject {
-    constructor(username) {
+    constructor(username, color = null) {
         this.username = username;
-        this.avatar = new AvatarObject()
-        this.avatar.setMessage(this.username);
+        this.avatar = new AvatarObject(color)
         this.avatar.load();
+        this.avatar.setMessage(this.username);
         this.lastTimeSeen = Date.now();
         this.deathTime = this.lastTimeSeen + DEATHRATE;
     }
@@ -18,9 +18,6 @@ class UserObject {
     }
 
     async update(displayDebug=false){
-        if (displayDebug){
-            this.avatar.setMessage(this.username);
-        }
         await this.avatar.update();
     }
 }

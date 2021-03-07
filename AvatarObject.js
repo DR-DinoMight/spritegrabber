@@ -4,7 +4,7 @@ const SPRITE_INCREMENT = 48,
       SPRITE_SIZE = 64,
       MOVEMENT_SPEED = 1.5,
       MIN_ANIMATION_TIME = 3000,
-      MIN_TEXT_DISPLAY_TIME = 10000,
+      MAX_ANIMATION_TIME = 7000,
       TIMESPERFRAME = 250;
 
 var a = function(n) {
@@ -24,9 +24,9 @@ var ANIMS = {
 var currentAnimName;
 
 class AvatarObject {
-    constructor(direction = 'idle', x = 0, y = 0, ) {
+    constructor(color = null, direction = 'idle', x = 0, y = 0) {
         currentAnimName = direction;
-        this.spriteSheetMaker = new SpriteMaker();
+        this.spriteSheetMaker = new SpriteMaker(color);
 
         this.ideling = false;
 
@@ -58,14 +58,17 @@ class AvatarObject {
                 ctx2.drawImage(this.spriteSheet, -this.spriteSheet.width, 0);
             }, {once: true});
 
-            console.log(image);
             this.width = this.spriteSheet.width;     //the width of sprite
             this.height = this.spriteSheet.height;
                     //last time frame index was updated
             this.lastUpdate = Date.now();
             this.lastAnimationChange = Date.now();
             document.dispatchEvent(AvatarLoaded);
-        },true);
+        },{
+            once: true,
+            passive: true,
+            capture: true
+          });
 
         // co;nsole.image( await this.spriteSheetMaker.getImage());
     }
@@ -84,30 +87,32 @@ class AvatarObject {
 
         let currentDate = Date.now();
 
-        if (currentDate >= this.lastAnimationChange + MIN_ANIMATION_TIME &&
-            Math.random() < 0.80
+        if ((currentDate >= this.lastAnimationChange + MIN_ANIMATION_TIME &&
+            Math.random() < 0.20) ||
+            (currentDate >= this.lastAnimationChange + MAX_ANIMATION_TIME)
         ){
-            console.log('here');
-            var keys = Object.keys(ANIMS);
+            const keys = Object.keys(ANIMS)
+                .filter(dir => dir !== this.direction);
+                // console.log(keys);
             this.direction = keys[ keys.length * Math.random() << 0];
             this.lastAnimationChange = currentDate;
         }
 
         if (this.y + SPRITE_SIZE > context.canvas.height-5){
             this.direction = 'up'
-            this.lastAnimationChange = Date.now();
+            // this.lastAnimationChange = Date.now();
         }else if (this.y < 5) {
             this.direction = 'down'
-            this.lastAnimationChange = Date.now();
+            // this.lastAnimationChange = Date.now();
         }
         else if (this.x < 5) {
             this.direction = 'right'
-            this.lastAnimationChange = Date.now();
+            // this.lastAnimationChange = Date.now();
 
         }
         else if (this.x + SPRITE_SIZE > context.canvas.width-5) {
             this.direction = 'left'
-            this.lastAnimationChange = Date.now();
+            // this.lastAnimationChange = Date.now();
         }
 
         // console.log(this.x + SPRITE_SIZE, context.canvas.width, this.x + SPRITE_SIZE > context.canvas.width)
@@ -123,7 +128,7 @@ class AvatarObject {
         this.drawTextBG(context, message || this.message);
     }
 
-    drawTextBG(ctx, txt, font = '18px Arial') {
+    drawTextBG(ctx, txt, font = '18px Pixeled') {
         /// lets save current state as we make a lot of changes
         ctx.save();
 
@@ -134,32 +139,35 @@ class AvatarObject {
         ctx.textBaseline = 'top';
 
         /// color for background
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = 'rgb(204, 153, 0, 0.3)';
 
         /// get width of text
         var width = ctx.measureText(txt).width;
 
-        let y = this.y - 40;
-        let x = this.x - width/2;
+        let y = this.y ;//- 40;
+        let x = this.x ;//- width;
 
-        if (y - 20 < 0) {
-            y = this.y + SPRITE_SIZE + 20;
+        if (y - 40 < (ctx.canvas.height / 2)) {
+            y = this.y + SPRITE_SIZE + (parseInt(font, 10));
+        }
+        else if (this.y > (ctx.canvas.height / 2)) {
+            y = this.y - (parseInt(font, 10)+20);
         }
 
-        if (x - 60 < 0) {
-            x = 0;
-        }else if (this.x + width > ctx.canvas.width) {
-            x = ctx.canvas.width - (width+30);
+        if (x < 0) {
+            x = width + SPRITE_SIZE;
+        }else if (this.x > (ctx.canvas.width / 2)) {
+            x = this.x - width + SPRITE_SIZE;
         }
 
         /// draw background rect assuming height of font
-        ctx.fillRect(x, y, width, parseInt(font, 10)+30);
+        ctx.fillRect(x, y, width+10, parseInt(font, 10)+10);
 
         /// text color
-        ctx.fillStyle = '#000';
-
+        ctx.fillStyle = '#0F111A';
+        // ctx.textAlign = "center";
         /// draw text on top
-        ctx.fillText(txt, x+10, y+10);
+        ctx.fillText(txt, x+5, y+5);
 
         /// restore original state
         ctx.restore();
@@ -193,8 +201,6 @@ class AvatarObject {
                     this.x -= MOVEMENT_SPEED;
                 }
             }
-
-
 
             context.save();
 

@@ -7,13 +7,12 @@ const PARTS_MAX = {
     hair: 22,
   };
 
-const COLORS = [
-    [ "#181B29", "#B3760A", "#FFB626", "#CC9900", "DR DINO'S" ],
-    [ "#181B29", "#A40A0C", "#F14C4E", "#F11012", "PANTHERS" ],
-    [ "#4c1c2d", "#d23c4e", "#5fb1f5", "#eaf5fa", "GRAND DAD 4 PALETTE by Starlane"],
-    [ "#7c3f58", "#eb6b6f", "#f9a875", "#fff6d3", "ICE CREAM GB PALETTE by Kerrie Lake"],
-    [ "#243137", "#3f503f", "#768448", "#acb56b", "NINTENDO GAMEBOY (ARNE) PALETTE by Arne" ],
-]
+let COLORS = {
+    'dr_dinos': [ "#181B29", "#B3760A", "#FFB626", "#CC9900" ],
+    'panthers': [ "#181B29", "#A40A0C", "#F14C4E", "#F11012"],
+    'grand': [ "#4c1c2d", "#d23c4e", "#5fb1f5", "#eaf5fa"],
+    'ice': [ "#7c3f58", "#eb6b6f", "#f9a875", "#fff6d3"],
+}
 
 var gParts = {}
 var gColorMode = '012';
@@ -21,12 +20,15 @@ var gColorMode = '012';
 
 class SpriteMaker {
 
-    constructor() {
+    constructor(color = null) {
         this.canvas = document.createElement('canvas');
         this.canvas.width = 16 * 6;
         this.canvas.height = 16 * 1;
         this.context = this.canvas.getContext('2d');
         this.loading = true;
+        this.chosenColor = COLORS[color];
+        // console.log(this.chosenColor, color, COLORS);
+        // console.log('this.chosenColor', this.chosenColor)
     }
 
     async load() {
@@ -112,7 +114,10 @@ class SpriteMaker {
     async colourSprite() {
         var imageData = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
         var data = imageData.data
-        var color = COLORS[Math.floor(Math.random() * COLORS.length)]
+        const keys = Object.keys(COLORS);
+        // console.log(keys);
+        var color = this.chosenColor || COLORS[keys[ keys.length * Math.random() << 0]];
+
         var C = (n) => {
             return [
                 parseInt(color[n].substr(1, 2), 16),
